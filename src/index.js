@@ -10,19 +10,70 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+
+  const user = users.find((user) => user.username === username);
+  if(user) {
+    request.user = user;
+    return next();
+  } else {
+    return response.status(404).json({error: "usuário não existe."})
+  }
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const {user} = request;
+  const todoQuantity = user.todos.length;
+
+  if(user.pro || todoQuantity < 10) {
+    return next();
+  }
+  else {
+    return response.status(403).json({error: "Contrate o plano PRO."})
+  }
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const {id} = request.params;
+
+  const user = users.find((user) => user.username === username);
+  
+  
+
+  if(!validate(id)) {
+    return response.status(400).json({error: "UUID inválido."})
+  }
+
+  if(!user) {
+    return response.status(404).json({error: "usuário não existe."})
+  }
+
+  const todo = user.todos.find((todo) => todo.id === id);
+  if(!todo) {
+    return response.status(404).json({error: "todo não existe."})
+  }
+
+  request.user = user;
+  request.todo = todo;
+  next();
+
+
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const {id} = request.params;
+
+  const user = users.find((user) => user.id === id);
+
+  if(user) {
+    request.user = user;
+    next();
+  }
+  else {
+    return response.status(404).json({error: "usuário não existe."})
+  }
+
 }
 
 app.post('/users', (request, response) => {
